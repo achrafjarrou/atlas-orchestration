@@ -1,0 +1,60 @@
+﻿name: CI
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Tests (Python 3.11)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: { POSTGRES_USER: atlas, POSTGRES_PASSWORD: atlas_secret, POSTGRES_DB: atlas_test }
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: --health-cmd "redis-cli ping" --health-interval 10s --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11", cache: "pip" }
+      - run: pip install poetry==1.8.0
+      - run: poetry install --with dev
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql+asyncpg://atlas:atlas_secret@localhost:5432/atlas_test
+          REDIS_URL: redis://localhost:6379/0
+          ENVIRONMENT: test
+          SECRET_KEY: test-secret-key-for-ci-only-minimum-32-chars
+        run: poetry run pytest tests/ --cov=atlas --cov-report=xml -v
+      - uses: codecov/codecov-action@v4
+        if: success()
+        with: { file: ./coverage.xml, fail_ci_if_error: false }
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install ruff
+      - run: ruff check atlas/ tests/
+      - run: ruff format --check atlas/ tests/
+
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t atlas:ci .
+      - run: docker run --rm atlas:ci python -c "from atlas.core.config import settings; print('Config OK')"
