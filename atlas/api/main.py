@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 
 from atlas.core.config import settings
 from atlas.core.models import generate_id
+from atlas.api.routes.contradiction_signals import router as contradiction_router
 
 logger = structlog.get_logger(__name__)
 
@@ -199,6 +200,7 @@ app = FastAPI(
     license_info={"name":"MIT"},
 )
 
+app.include_router(contradiction_router)
 app.add_middleware(CORSMiddleware, allow_origins=["*"],
                    allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
