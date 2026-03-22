@@ -1,4 +1,4 @@
-﻿# atlas/core/config.py
+# atlas/core/config.py
 # Central configuration — reads ALL settings from environment variables.
 # One source of truth: every setting documented, typed, validated.
 # Usage: from atlas.core.config import settings
@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
 
     # Database
-    database_url: str = "postgresql+asyncpg://atlas:atlas_secret@localhost:5432/atlas_db"
+    database_url: str = "sqlite+aiosqlite:///./atlas.db"
 
     # Redis
     redis_url: str = "redis://localhost:6379/0"

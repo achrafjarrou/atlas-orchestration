@@ -1,20 +1,55 @@
-﻿# Multi-stage build: Builder (~800MB) → Runtime (~200MB)
-FROM python:3.11-slim AS builder
-WORKDIR /build
-RUN pip install --no-cache-dir poetry==1.8.0
-COPY pyproject.toml poetry.lock* ./
-RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
+FROM python:3.11-slim
 
-FROM python:3.11-slim AS runtime
+RUN useradd -m -u 1000 user
+ENV PATH="/home/user/.local/bin:$PATH"
+
 WORKDIR /app
-RUN apt-get update && apt-get install -y libpq-dev curl && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /build/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY atlas/ ./atlas/
-COPY scripts/ ./scripts/
-RUN useradd -m -u 1000 atlasuser && chown -R atlasuser:atlasuser /app
-USER atlasuser
-EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
-CMD ["uvicorn", "atlas.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Install deps directement (sans Poetry pour simplifier)
+RUN pip install --no-cache-dir \
+    fastapi==0.115.0 \
+    uvicorn[standard]==0.32.0 \
+    httpx==0.27.0 \
+    pydantic==2.9.0 \
+    pydantic-settings==2.5.0 \
+    structlog==24.4.0 \
+    python-dotenv==1.0.0 \
+    langchain-core==0.3.20 \
+    langgraph==0.2.55 \
+    langchain-groq==0.2.1 \
+    sentence-transformers==3.2.0 \
+    rank-bm25==0.2.2 \
+    duckduckgo-search==6.3.0 \
+    aiosqlite==0.20.0 \
+    sqlalchemy[asyncio]==2.0.35 \
+    tenacity==9.0.0 \
+    python-jose[cryptography]==3.3.0 \
+    passlib[bcrypt]==1.7.4
+
+COPY --chown=user atlas/ ./atlas/
+
+# .env pour HuggingFace (sans PostgreSQL/Redis/Qdrant)
+RUN echo 'ENVIRONMENT=production\n\
+DEBUG=false\n\
+DATABASE_URL=sqlite+aiosqlite:///./atlas.db\n\
+REDIS_URL=redis://localhost:6379/0\n\
+QDRANT_URL=http://localhost:6333\n\
+SECRET_KEY=atlas-hf-spaces-secret-key-production-32chars\n\
+ATLAS_AGENT_NAME=ATLAS Orchestrator\n\
+ATLAS_BASE_URL=https://achrafjarrou-atlas-orchestration.hf.space\n\
+EMBEDDING_MODEL=all-MiniLM-L6-v2\n\
+EMBEDDING_DIMENSION=384\n\
+DEFAULT_LLM_MODEL=llama-3.1-8b-instant\n\
+GROQ_API_KEY=\n\
+ENABLE_AUDIT_TRAIL=true\n\
+ENABLE_HITL=true\n\
+QDRANT_COLLECTION_AGENTS=atlas_agents\n\
+QDRANT_COLLECTION_KNOWLEDGE=atlas_knowledge' > .env
+
+USER user
+
+EXPOSE 7860
+
+CMD ["uvicorn", "atlas.api.main:app", "--host", "0.0.0.0", "--port", "7860"]
