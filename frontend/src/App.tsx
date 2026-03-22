@@ -593,11 +593,26 @@ export default function App() {
           {/* Logo + brand */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2.5">
-              <div className="relative">
-                <div className="absolute inset-0 bg-blue-500 rounded-xl blur-md opacity-30" />
-                <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-teal-600 flex items-center justify-center shadow-lg">
-                  <span className="text-white font-black text-sm">A</span>
-                </div>
+              <div className="relative flex-shrink-0">
+                <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="36" height="36" rx="10" fill="#0A0A0F"/>
+                  {/* Outer ring */}
+                  <circle cx="18" cy="18" r="13" stroke="#1E3A5F" strokeWidth="1"/>
+                  {/* Orbit lines */}
+                  <ellipse cx="18" cy="18" rx="13" ry="5" stroke="#1a4a7a" strokeWidth="0.6" strokeDasharray="2 2"/>
+                  <ellipse cx="18" cy="18" rx="5" ry="13" stroke="#1a4a7a" strokeWidth="0.6" strokeDasharray="2 2"/>
+                  {/* Core nodes — agents */}
+                  <circle cx="18" cy="5"  r="2" fill="#3B8BD4"/>
+                  <circle cx="29" cy="24" r="2" fill="#2DD4BF"/>
+                  <circle cx="7"  cy="24" r="2" fill="#818CF8"/>
+                  {/* Connection lines */}
+                  <line x1="18" y1="7"  x2="27" y2="22" stroke="#3B8BD4" strokeWidth="0.8" strokeOpacity="0.6"/>
+                  <line x1="27" y1="22" x2="9"  y2="22" stroke="#2DD4BF" strokeWidth="0.8" strokeOpacity="0.6"/>
+                  <line x1="9"  y1="22" x2="18" y2="7"  stroke="#818CF8" strokeWidth="0.8" strokeOpacity="0.6"/>
+                  {/* Central core */}
+                  <circle cx="18" cy="18" r="3.5" fill="#0F172A" stroke="#3B8BD4" strokeWidth="1"/>
+                  <circle cx="18" cy="18" r="1.5" fill="#3B8BD4"/>
+                </svg>
               </div>
               <div>
                 <div className="text-sm font-bold text-white tracking-tight">ATLAS</div>
