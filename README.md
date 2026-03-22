@@ -370,7 +370,7 @@ API starts and serves requests even if PostgreSQL, Redis, or Qdrant are unavaila
 
 **Achraf Jarrou** — AI Systems Engineer  
 Casablanca · EQF Level 7  
-[GitHub](https://github.com/achrafjarrou) · [LinkedIn](https://linkedin.com/in/achrafjarrou)
+[GitHub](https://github.com/achrafjarrou) · [LinkedIn](https://linkedin.com/in/achraf-jarrou)
 
 ---
 
