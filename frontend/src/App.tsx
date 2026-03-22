@@ -12,7 +12,9 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 
 // ── Config ────────────────────────────────────────────────────────────────────
-const API = "http://localhost:8000";
+const API = window.location.hostname === "localhost"
+  ? "http://localhost:8000"
+  : "https://achrafjarrou-atlas-orchestration.hf.space";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Agent   { agent_id:string; name:string; base_url:string; status:string; health_score:number; capabilities?:any[]; }
